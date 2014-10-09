@@ -200,6 +200,7 @@ void* cb_mget_args(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     
     if (!enif_get_int(env, argv[1], &args->exp)) goto error1;
     if (!enif_get_int(env, argv[2], &args->lock)) goto error1;
+    if (!enif_get_int(env, argv[3], &args->gettype)) goto error1;
 
     free(currKey);
 
@@ -230,13 +231,14 @@ ERL_NIF_TERM cb_mget(ErlNifEnv* env, handle_t* handle, void* obj)
     
     ERL_NIF_TERM* results;
     ERL_NIF_TERM returnValue;
-    ErlNifBinary databin;
+    ERL_NIF_TERM dataValue;
     ErlNifBinary key_binary;
     unsigned int numkeys = args->numkeys;
     void** keys = args->keys;
     size_t* nkeys = args->nkeys;
     int exp = args->exp;
     int lock = args->lock;
+    int gettype = args->gettype;
     int i = 0;
 
     cb.currKey = 0;
@@ -252,6 +254,7 @@ ERL_NIF_TERM cb_mget(ErlNifEnv* env, handle_t* handle, void* obj)
       get->v.v0.nkey = nkeys[i];
       get->v.v0.exptime = exp;
       get->v.v0.lock = lock;
+      get->v.v0.gettype = gettype;
       commands[i] = get;
     }
 
@@ -268,13 +271,40 @@ ERL_NIF_TERM cb_mget(ErlNifEnv* env, handle_t* handle, void* obj)
         enif_alloc_binary(cb.ret[i]->nkey, &key_binary);
         memcpy(key_binary.data, cb.ret[i]->key, cb.ret[i]->nkey);
         if (cb.ret[i]->error == LCB_SUCCESS) {
-            enif_alloc_binary(cb.ret[i]->size, &databin);
-            memcpy(databin.data, cb.ret[i]->data, cb.ret[i]->size);
-            results[i] = enif_make_tuple4(env, 
+            switch (gettype) {
+                case LCB_LGET:
+                case LCB_SGET: 
+                    {
+                        int count = cb.ret[i]->size / sizeof(ErlNifUInt64);
+                        ErlNifUInt64 *arrData = (ErlNifUInt64 *)cb.ret[i]->data;
+                        ERL_NIF_TERM* dataArray = malloc(sizeof(ERL_NIF_TERM) * count);
+                        int j;
+                        for (j=0; j<count; j++) {
+                            dataArray[i] = enif_make_uint64(env, *(arrData+i));
+                        }
+                        dataValue = enif_make_list_from_array(env, dataArray, count);
+                        free(dataArray);
+                    } break;
+                case LCB_LDEQUEUE:
+                    {
+                        ErlNifUInt64 *u64Ptr = (ErlNifUInt64 *)cb.ret[i]->data;
+                        dataValue = enif_make_uint64(env, *u64Ptr);
+                    } break;
+                case LCB_GET:
+                default:
+                    {
+                        ErlNifBinary databin;
+                        enif_alloc_binary(cb.ret[i]->size, &databin);
+                        memcpy(databin.data, cb.ret[i]->data, cb.ret[i]->size);
+                        dataValue = enif_make_binary(env, &databin);
+                    } break;
+            }
+            results[i] = enif_make_tuple4(env,
                     enif_make_uint64(env, cb.ret[i]->cas), 
                     enif_make_int(env, cb.ret[i]->flag), 
                     enif_make_binary(env, &key_binary),
-                    enif_make_binary(env, &databin));
+                    dataValue
+                    );
             free(cb.ret[i]->data);
         } else {
             results[i] = enif_make_tuple2(env, 

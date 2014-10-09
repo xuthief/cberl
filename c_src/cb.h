@@ -22,12 +22,20 @@ typedef struct store_args {
     lcb_size_t nbytes;
 } store_args_t;
 
+    typedef enum {
+        LCB_GET = 0x00,
+        LCB_LGET = 0x01,
+        LCB_LDEQUEUE = 0x02,
+        LCB_SGET = 0x03,
+    } lcb_get_t;
+
 typedef struct mget_args {
     unsigned int numkeys;
     void** keys;
     size_t* nkeys;
     int exp;
     int lock;
+    int gettype;
 } mget_args_t;
 
 typedef struct unlock_args {

@@ -196,7 +196,12 @@ operation_value(add) -> ?'CBE_ADD';
 operation_value(replace) -> ?'CBE_REPLACE';
 operation_value(set) -> ?'CBE_SET';
 operation_value(append) -> ?'CBE_APPEND';
-operation_value(prepend) -> ?'CBE_PREPEND'.
+operation_value(prepend) -> ?'CBE_PREPEND';
+operation_value(lenqueue) -> ?'CBE_LENQUEUE';
+operation_value(lremove) -> ?'CBE_LREMOVE';
+operation_value(sadd) -> ?'CBE_SADD';
+operation_value(sremove) -> ?'CBE_SREMOVE';
+operation_value(sismember) -> ?'CBE_SISMEMBER'.
 
 -spec op(atom()) -> integer().
 op(connect) -> ?'CMD_CONNECT';
