@@ -90,9 +90,26 @@ handle_call({store, Op, Key, Value, TranscoderOpts, Exp, Cas}, _From,
     receive
         Reply -> {reply, Reply, State}
     end;
+handle_call({mget, Keys, Exp, Lock, Type}, _From, 
+            State = #instance{handle = Handle, transcoder = Transcoder}) ->
+    ok = cberl_nif:control(Handle, op(mget), [Keys, Exp, Lock, Type]),
+    Reply = receive
+        {error, Error} -> {error, Error};
+        {ok, Results} ->
+            lists:map(fun(Result) ->
+                        case Result of
+                            {Cas, Flag, Key, Value} ->
+                                DecodedValue = Transcoder:decode_value(Flag, Value),
+                                {Key, Cas, DecodedValue};
+                            {_Key, {error, _Error}} ->
+                                Result
+                        end
+                end, Results)
+    end,
+    {reply, Reply, State};
 handle_call({mget, Keys, Exp, Lock}, _From, 
             State = #instance{handle = Handle, transcoder = Transcoder}) ->
-    ok = cberl_nif:control(Handle, op(mget), [Keys, Exp, Lock]),
+    ok = cberl_nif:control(Handle, op(mget), [Keys, Exp, Lock, 0]),
     Reply = receive
         {error, Error} -> {error, Error};
         {ok, Results} ->

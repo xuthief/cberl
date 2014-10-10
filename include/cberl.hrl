@@ -4,12 +4,12 @@
 -define('CBE_APPEND',   4).
 -define('CBE_PREPEND',  5).
 %% /** For queue ops */
--define('LCB_LENQUEUE', 16#0007).
--define('LCB_LREMOVE',  16#0008).
+-define('CBE_LENQUEUE', 16#0007).
+-define('CBE_LREMOVE',  16#0008).
 %% /** FOR sets ops */
--define('LCB_SADD',     16#0009).
--define('LCB_SREMOVE',  16#000a).
--define('LCB_SISMEMBER',16#000b).
+-define('CBE_SADD',     16#0009).
+-define('CBE_SREMOVE',  16#000a).
+-define('CBE_SISMEMBER',16#000b).
 
 -define('CMD_CONNECT',    0).
 -define('CMD_STORE',      1).

@@ -451,16 +451,16 @@ sadd(PoolPid, Key, Exp, Value) ->
     store(PoolPid, sadd, Key, Value, standard, Exp, 0).
 
 %% @equiv sremove(PoolPid, Key, Exp, Value, standard)
--spec sadd(pid(), key(), integer(), integer()) -> ok | {error, _}.
+-spec sremove(pid(), key(), integer(), integer()) -> ok | {error, _}.
 sremove(PoolPid, Key, Exp, Value) ->
     store(PoolPid, sremove, Key, Value, standard, Exp, 0).
 
 %% @equiv sismember(PoolPid, Key, Exp, Value, standard)
--spec sadd(pid(), key(), integer(), integer()) -> ok | {error, _}.
+-spec sismember(pid(), key(), integer(), integer()) -> ok | {error, _}.
 sismember(PoolPid, Key, Exp, Value) ->
     store(PoolPid, sismember, Key, Value, standard, Exp, 0).
 
-%% @equiv sadd(PoolPid, Key, Exp, standard)
+%% @equiv sget(PoolPid, Key, Exp, standard)
 -spec sget(pid(), key(), integer()) -> ok | {error, _}.
 sget(PoolPid, Key, Exp) ->
     hd(mget(PoolPid, [Key], Exp, sget)).
