@@ -20,6 +20,12 @@
 -define('CMD_REMOVE',     6).
 -define('CMD_HTTP',       7).
 
+%% for get types
+-define('CBE_GET',          16#0000).
+-define('CBE_LGET',         16#0001).
+-define('CBE_LDEQUEUE',     16#0002).
+-define('CBE_SGET',         16#0003).
+
 -type handle() :: binary().
 
 -record(instance, {handle :: handle(),

@@ -5,12 +5,6 @@
 -module(cberl).
 -include("cberl.hrl").
 
-%% for get types
--define('LCB_GET',          16#0000).
--define('LCB_LGET',         16#0001).
--define('LCB_LDEQUEUE',     16#0002).
--define('LCB_SGET',         16#0003).
-
 -export([start_link/2, start_link/3, start_link/5, start_link/6, start_link/7]).
 -export([stop/1]).
 %store operations
@@ -211,12 +205,6 @@ store(PoolPid, Op, Key, Value, TranscoderOpts, Exp, Cas) ->
 -spec mget(pid(), [key()], integer()) -> list().
 mget(PoolPid, Keys, Exp) ->
     execute(PoolPid, {mget, Keys, Exp, 0}).
-
-%% types for get:
-%% LCB_GET = 0x00,
-%% LCB_LGET = 0x01,
-%% LCB_LDEQUEUE = 0x02,
-%% LCB_SGET = 0x03,
 
 -spec mget(pid(), [key()], integer(), integer) -> list().
 mget(PoolPid, Keys, Exp, Type) ->
@@ -424,22 +412,24 @@ remove_design_doc(PoolPid, DocName) ->
 %% @equiv lenqueue(PoolPid, Key, Exp, Value, standard)
 -spec lenqueue(pid(), key(), integer(), integer()) -> ok | {error, _}.
 lenqueue(PoolPid, Key, Exp, Value) ->
-    store(PoolPid, lenqueue, Key, Value, standard, Exp, 0).
+    BinValue = <<Value:64/unsigned-integer>>,
+    store(PoolPid, lenqueue, Key, BinValue, transed, Exp, 0).
 
 %% @equiv lremove(PoolPid, Key, Exp, Value, standard)
 -spec lremove(pid(), key(), integer(), integer()) -> ok | {error, _}.
 lremove(PoolPid, Key, Exp, Value) ->
-    store(PoolPid, lremove, Key, Value, standard, Exp, 0).
+    BinValue = <<Value:64/unsigned-integer>>,
+    store(PoolPid, lremove, Key, BinValue, transed, Exp, 0).
 
 %% @equiv ldequeue(PoolPid, Key, Exp, standard)
 -spec ldequeue(pid(), key(), integer()) -> ok | {error, _}.
 ldequeue(PoolPid, Key, Exp) ->
-    hd(mget(PoolPid, [Key], Exp, ldequeue)).
+    hd(mget(PoolPid, [Key], Exp, ?'CBE_LDEQUEUE')).
 
 %% @equiv lget(PoolPid, Key, Exp, standard)
 -spec lget(pid(), key(), integer()) -> ok | {error, _}.
 lget(PoolPid, Key, Exp) ->
-    hd(mget(PoolPid, [Key], Exp, lget)).
+    hd(mget(PoolPid, [Key], Exp, ?'CBE_LGET')).
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %%% SETS OPERATIONS %%%
@@ -448,20 +438,23 @@ lget(PoolPid, Key, Exp) ->
 %% @equiv sadd(PoolPid, Key, Exp, Value, standard)
 -spec sadd(pid(), key(), integer(), integer()) -> ok | {error, _}.
 sadd(PoolPid, Key, Exp, Value) ->
-    store(PoolPid, sadd, Key, Value, standard, Exp, 0).
+    BinValue = <<Value:64/unsigned-integer>>,
+    store(PoolPid, sadd, Key, BinValue, transed, Exp, 0).
 
 %% @equiv sremove(PoolPid, Key, Exp, Value, standard)
 -spec sremove(pid(), key(), integer(), integer()) -> ok | {error, _}.
 sremove(PoolPid, Key, Exp, Value) ->
-    store(PoolPid, sremove, Key, Value, standard, Exp, 0).
+    BinValue = <<Value:64/unsigned-integer>>,
+    store(PoolPid, sremove, Key, BinValue, transed, Exp, 0).
 
 %% @equiv sismember(PoolPid, Key, Exp, Value, standard)
 -spec sismember(pid(), key(), integer(), integer()) -> ok | {error, _}.
 sismember(PoolPid, Key, Exp, Value) ->
-    store(PoolPid, sismember, Key, Value, standard, Exp, 0).
+    BinValue = <<Value:64/unsigned-integer>>,
+    store(PoolPid, sismember, Key, BinValue, transed, Exp, 0).
 
 %% @equiv sget(PoolPid, Key, Exp, standard)
 -spec sget(pid(), key(), integer()) -> ok | {error, _}.
 sget(PoolPid, Key, Exp) ->
-    hd(mget(PoolPid, [Key], Exp, sget)).
+    hd(mget(PoolPid, [Key], Exp, ?'CBE_SGET')).
 
