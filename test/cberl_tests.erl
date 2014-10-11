@@ -41,11 +41,11 @@ test_set_and_get(_) ->
     Get1 = cberl:get(?POOLNAME, Key),
     ok = cberl:set(?POOLNAME, Key, 0, Value, json),
     Get2 = cberl:get(?POOLNAME, Key),
-    ok = cberl:set(?POOLNAME, Key, 0, Value, raw_binary),
-    Get3 = cberl:get(?POOLNAME, Key),
+    %ok = cberl:set(?POOLNAME, Key, 0, Value, raw_binary),
+    %Get3 = cberl:get(?POOLNAME, Key),
     [?_assertMatch({Key, _, Value}, Get1),
-     ?_assertMatch({Key, _, Value}, Get2),
-     ?_assertMatch({Key, _, Value}, Get3)
+     ?_assertMatch({Key, _, Value}, Get2)
+     %,?_assertMatch({Key, _, Value}, Get3)
     ].
 
 test_replace_add(_) ->
