@@ -31,6 +31,7 @@ clean_up(_) ->
 
 test_lenqueue(_) ->
     Key = <<"testkey">>,
+    Key2 = <<"testkey2">>,
     Value = 1,
     ok = cberl:lenqueue(?POOLNAME, Key, 0, Value),
     Get1 = cberl:lget(?POOLNAME, Key),
@@ -39,9 +40,11 @@ test_lenqueue(_) ->
     Value2 = 2,
     ok = cberl:lenqueue(?POOLNAME, Key, 0, Value2),
     Get3 = cberl:lget(?POOLNAME, Key),
+    GetFail = cberl:lget(?POOLNAME, Key2),
     [?_assertMatch({Key, _, [Value]}, Get1)
      ,?_assertMatch({Key, _, [Value, Value]}, Get2)
      ,?_assertMatch({Key, _, [Value, Value, Value2]}, Get3)
+     ,?_assertMatch({Key2, {error, key_enoent}}, GetFail)
     ].
 
 test_ldequeue(_) ->
