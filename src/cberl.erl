@@ -21,9 +21,9 @@
 %design doc opertations
 -export([set_design_doc/3, remove_design_doc/2]).
 %queue opts
--export([lenqueue/4, ldequeue/3, lremove/4, lget/3]).
+-export([lenqueue/4, ldequeue/3, lremove/4, lget/2]).
 %sets opts
--export([sadd/4, sismember/4, sremove/4, sget/3]).
+-export([sadd/4, sismember/4, sremove/4, sget/2]).
 
 %% @equiv start_link(PoolName, NumCon, "localhost:8091", "", "", "")
 start_link(PoolName, NumCon) ->
@@ -206,7 +206,7 @@ store(PoolPid, Op, Key, Value, TranscoderOpts, Exp, Cas) ->
 mget(PoolPid, Keys, Exp) ->
     execute(PoolPid, {mget, Keys, Exp, 0}).
 
--spec mget(pid(), [key()], integer(), integer) -> list().
+-spec mget(pid(), [key()], integer(), integer()) -> list().
 mget(PoolPid, Keys, Exp, Type) ->
     execute(PoolPid, {mget, Keys, Exp, 0, Type}).
 
@@ -426,10 +426,10 @@ lremove(PoolPid, Key, Exp, Value) ->
 ldequeue(PoolPid, Key, Exp) ->
     hd(mget(PoolPid, [Key], Exp, ?'CBE_LDEQUEUE')).
 
-%% @equiv lget(PoolPid, Key, Exp, standard)
--spec lget(pid(), key(), integer()) -> ok | {error, _}.
-lget(PoolPid, Key, Exp) ->
-    hd(mget(PoolPid, [Key], Exp, ?'CBE_LGET')).
+%% @equiv lget(PoolPid, Key)
+-spec lget(pid(), key()) -> ok | {error, _}.
+lget(PoolPid, Key) ->
+    hd(mget(PoolPid, [Key], 0, ?'CBE_LGET')).
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %%% SETS OPERATIONS %%%
@@ -453,8 +453,8 @@ sismember(PoolPid, Key, Exp, Value) ->
     BinValue = <<Value:64/unsigned-integer>>,
     store(PoolPid, sismember, Key, BinValue, transed, Exp, 0).
 
-%% @equiv sget(PoolPid, Key, Exp, standard)
--spec sget(pid(), key(), integer()) -> ok | {error, _}.
-sget(PoolPid, Key, Exp) ->
-    hd(mget(PoolPid, [Key], Exp, ?'CBE_SGET')).
+%% @equiv sget(PoolPid, Key)
+-spec sget(pid(), key()) -> ok | {error, _}.
+sget(PoolPid, Key) ->
+    hd(mget(PoolPid, [Key], 0, ?'CBE_SGET')).
 

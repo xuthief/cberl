@@ -231,7 +231,7 @@ ERL_NIF_TERM cb_mget(ErlNifEnv* env, handle_t* handle, void* obj)
     
     ERL_NIF_TERM* results;
     ERL_NIF_TERM returnValue;
-    ERL_NIF_TERM dataValue;
+    ErlNifBinary databin;
     ErlNifBinary key_binary;
     unsigned int numkeys = args->numkeys;
     void** keys = args->keys;
@@ -271,40 +271,13 @@ ERL_NIF_TERM cb_mget(ErlNifEnv* env, handle_t* handle, void* obj)
         enif_alloc_binary(cb.ret[i]->nkey, &key_binary);
         memcpy(key_binary.data, cb.ret[i]->key, cb.ret[i]->nkey);
         if (cb.ret[i]->error == LCB_SUCCESS) {
-            switch (gettype) {
-                case LCB_LGET:
-                case LCB_SGET: 
-                    {
-                        int count = cb.ret[i]->size / sizeof(ErlNifUInt64);
-                        ErlNifUInt64 *arrData = (ErlNifUInt64 *)cb.ret[i]->data;
-                        ERL_NIF_TERM* dataArray = malloc(sizeof(ERL_NIF_TERM) * count);
-                        int j;
-                        for (j=0; j<count; j++) {
-                            dataArray[i] = enif_make_uint64(env, *(arrData+i));
-                        }
-                        dataValue = enif_make_list_from_array(env, dataArray, count);
-                        free(dataArray);
-                    } break;
-                case LCB_LDEQUEUE:
-                    {
-                        ErlNifUInt64 *u64Ptr = (ErlNifUInt64 *)cb.ret[i]->data;
-                        dataValue = enif_make_uint64(env, *u64Ptr);
-                    } break;
-                case LCB_GET:
-                default:
-                    {
-                        ErlNifBinary databin;
-                        enif_alloc_binary(cb.ret[i]->size, &databin);
-                        memcpy(databin.data, cb.ret[i]->data, cb.ret[i]->size);
-                        dataValue = enif_make_binary(env, &databin);
-                    } break;
-            }
-            results[i] = enif_make_tuple4(env,
+            enif_alloc_binary(cb.ret[i]->size, &databin);
+            memcpy(databin.data, cb.ret[i]->data, cb.ret[i]->size);
+            results[i] = enif_make_tuple4(env, 
                     enif_make_uint64(env, cb.ret[i]->cas), 
                     enif_make_int(env, cb.ret[i]->flag), 
                     enif_make_binary(env, &key_binary),
-                    dataValue
-                    );
+                    enif_make_binary(env, &databin));
             free(cb.ret[i]->data);
         } else {
             results[i] = enif_make_tuple2(env, 

@@ -5,7 +5,7 @@
 -define('CBE_JSON',     16#0002).
 -define('CBE_RAW',      16#0004).
 -define('CBE_STR',      16#0008).
--define('CBE_TRANSED',  16#0010).
+-define('CBE_TRANSED',  16#0000).
 
 -define(STANDARD_FLAG, json).
 
